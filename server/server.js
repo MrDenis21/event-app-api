@@ -15,7 +15,7 @@ const port = process.env.PORT;
 
 app.use(bodyParser.json());
 
-app.post('/event',authenticate,(req,res)=>{
+app.post('/event',(req,res)=>{
     var event = new Event({
         name: req.body.name,
         type: req.body.type,
@@ -24,8 +24,8 @@ app.post('/event',authenticate,(req,res)=>{
         location: req.body.location,
         maxMembers: req.body.maxMembers,
         description: req.body.description,
-        _creator: req.user._id,
-        _members: req.user._id
+        // _creator: req.user._id,
+        // _members: req.user._id
     });
 
     event.save().then((doc)=>{
