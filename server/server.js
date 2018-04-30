@@ -15,7 +15,7 @@ const port = process.env.PORT;
 
 app.use(bodyParser.json());
 
-app.post('/event',(req,res)=>{
+app.post('api/event', authenticate, (req,res)=>{
     var event = new Event({
         name: req.body.name,
         type: req.body.type,
@@ -24,8 +24,8 @@ app.post('/event',(req,res)=>{
         location: req.body.location,
         maxMembers: req.body.maxMembers,
         description: req.body.description,
-        // _creator: req.user._id,
-        // _members: req.user._id
+        _creator: req.user._id,
+        _members: req.user._id
     });
 
     event.save().then((doc)=>{
@@ -35,15 +35,31 @@ app.post('/event',(req,res)=>{
     });
 });
 
-app.get('/events',authenticate, (req,res)=>{
+app.get('api/events/my',authenticate, (req,res)=>{
     Event.find({_creator:req.user._id}).then((events)=>{
         res.send({events});
     }).catch((e)=>{
-        res.send(400).send();
+        res.send(400).send(e);
     });
 });
 
-app.get('/event/:id',authenticate,(req,res)=>{
+app.get('api/events/all', authenticate, (req,res)=>{
+    Event.find({}).then((events)=>{
+        res.send({events});
+    }).catch((e)=>{
+        res.send(400).send(e);
+    });
+});
+
+app.get('api/events/taking-part',authenticate,(req,res)=>{
+    Event.find({_members:req.user._id}).then((events)=>{
+        res.send({events});
+    }).catch((e)=>{
+        res.send(400).send(e);
+    });
+});
+
+app.get('api/event/:id',authenticate,(req,res)=>{
     var id = req.params.id;
     Event.findOne({
         _id:id,
@@ -58,7 +74,7 @@ app.get('/event/:id',authenticate,(req,res)=>{
     });
 });
 
-app.patch('/event/:id', authenticate, (req,res)=>{
+app.patch('api/event/:id', authenticate, (req,res)=>{
     var id = req.params.id;
     var body = _.pick(req.body, ["name","type","startDate","endDate","location","maxMembers","description","_members"])
     // console.log(body);
@@ -85,7 +101,7 @@ app.patch('/event/:id', authenticate, (req,res)=>{
     });
 });
 
-app.delete('/event/:id', authenticate, (req,res)=>{
+app.delete('api/event/:id', authenticate, (req,res)=>{
     var id = req.params.id;
     if(!ObjectID.isValid(id)){
         return res.status(400).send("Invalid object id");
@@ -104,7 +120,7 @@ app.delete('/event/:id', authenticate, (req,res)=>{
     });
 });
 
-app.post('/user',(req,res)=>{
+app.post('api/user',(req,res)=>{
     var body = _.pick(req.body,['email','password','username']);
     var user = new User(body);
 
@@ -117,22 +133,11 @@ app.post('/user',(req,res)=>{
     });
 });
 
-app.post('/sampleuser',(req,res)=>{
-    var body = _.pick(req.body,['email','password','username']);
-    var user = new User(body);
-
-    user.save().then(()=>{
-       res.send(user);
-    }).catch((e)=>{
-        res.status(400).send(e);
-    });
-})
-
-app.get('/users/me', authenticate, (req,res)=>{
+app.get('api/users/me', authenticate, (req,res)=>{
     res.send(req.user);
 });
 
-app.delete('/users/me/token', authenticate, (req,res)=>{
+app.delete('api/users/me/token', authenticate, (req,res)=>{
     req.user.removeToken(req.token).then(()=>{
         res.status(200).send();
     }, ()=>{
@@ -140,7 +145,7 @@ app.delete('/users/me/token', authenticate, (req,res)=>{
     });
 });
 
-app.post('/users/login', (req, res)=>{
+app.post('api/users/login', (req, res)=>{
     var body = _.pick(req.body, ['email','password']);
 
     User.findByCredentials(body.email, body.password).then((user)=>{
@@ -152,7 +157,7 @@ app.post('/users/login', (req, res)=>{
     });
 });
 
-app.patch('/users/me/token', authenticate, (req,res)=>{
+app.patch('api/users/me/token', authenticate, (req,res)=>{
     var body = _.pick(req.body,["email","password","username"]);
     User.findOneAndUpdate({
         'tokens': {
@@ -169,11 +174,6 @@ app.patch('/users/me/token', authenticate, (req,res)=>{
         res.status(400).send(e);
     });
 
-    // user.save().then(()=>{
-    //     res.send(user);
-    // }).catch((e)=>{
-    //     res.status(400).send(e);
-    // });
 });
 
 app.listen(port, ()=>{

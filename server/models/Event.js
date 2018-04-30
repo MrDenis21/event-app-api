@@ -36,16 +36,16 @@ var EventSchema = new mongoose.Schema({
     image:{
         data:Buffer,
         contentType: String
-    }
-    // _creator: {
-    //     required:true,
-    //     type: mongoose.Schema.Types.ObjectId
-    // },
+    },
+    _creator: {
+        required:true,
+        type: mongoose.Schema.Types.ObjectId
+    },
 
-    // _members: {
-    //     required:true,
-    //     type: mongoose.Schema.Types.ObjectId
-    // }
+    _members: {
+        required:true,
+        type: [mongoose.Schema.Types.ObjectId]
+    }
 });
 
 var Event = mongoose.model('Event',EventSchema);
