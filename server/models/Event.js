@@ -23,7 +23,9 @@ var EventSchema = new mongoose.Schema({
     },
     location: {
         type: String,
-        required: true
+        required: true,
+        minlength: 3,
+        maxlength: 100
     },
     maxMembers: {
         type: Number,
