@@ -133,7 +133,7 @@ app.post('/api/user',(req,res)=>{
     user.save().then(()=>{
         return user.generateAuthToken();
     }).then((token)=>{
-        res.header('x-auth',token).send(user);
+        res.header('x-auth',token).send(token);
     }).catch((e)=>{
         res.status(400).send(e);
     });
